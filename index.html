@@ -97,7 +97,7 @@
                     var resultJson = JSON.stringify(result);
                     
                     if (typeof unityInstance !== 'undefined') {
-                        unityInstance.SendMessage('TelegramWebApp', callbackName, resultJson);
+                        unityInstance.SendMessage('TelegramWebAppButton', callbackName, resultJson);
                     }
                 });
             } else {
@@ -107,7 +107,7 @@
                     productId: productIdStr,
                     errorMessage: "Telegram WebApp API not available"
                 };
-                unityInstance.SendMessage('TelegramWebApp', callbackName, JSON.stringify(result));
+                unityInstance.SendMessage('TelegramWebAppButton', callbackName, JSON.stringify(result));
             }
         } catch (e) {
             console.error('Error launching stars payment:', e);
@@ -116,7 +116,7 @@
                 productId: productIdStr,
                 errorMessage: e.message
             };
-            unityInstance.SendMessage('TelegramWebApp', callbackName, JSON.stringify(result));
+            unityInstance.SendMessage('TelegramWebAppButton', callbackName, JSON.stringify(result));
         }
       }
 
