@@ -77,27 +77,46 @@
 
       function StarsPayment(amount, callbackName) {
         // Вызываем Telegram WebApp API
-        
+        const productIdStr = 'testProductId';
         try {
             if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.openInvoice({
-                    currency: 'XTR',
-                    amount: amount
-                }, function(status) {
-                    // Вызываем callback в Unity
-                    var result = {status: status};
+                // Правильный формат запроса для звёзд
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: "stars_payment",
+                    product_id: productIdStr
+                }));
+                
+                // Обработчик ответа
+                Telegram.WebApp.onEvent('invoiceClosed', function(eventData) {
+                    var result = {
+                        status: eventData.status,
+                        productId: productIdStr,
+                        errorMessage: eventData.error_message || ''
+                    };
+                    
                     var resultJson = JSON.stringify(result);
                     
-                    // Вызываем Unity-функцию с результатом
                     if (typeof unityInstance !== 'undefined') {
-                        unityInstance.SendMessage('TelegramWebAppButton', callbackName, resultJson);
+                        unityInstance.SendMessage('TelegramWebApp', callbackName, resultJson);
                     }
                 });
             } else {
-                window.alert('Telegram WebApp API not found');
+                console.error('Telegram WebApp API not found');
+                var result = {
+                    status: "error",
+                    productId: productIdStr,
+                    errorMessage: "Telegram WebApp API not available"
+                };
+                unityInstance.SendMessage('TelegramWebApp', callbackName, JSON.stringify(result));
             }
         } catch (e) {
-            window.alert('Error launching stars payment: ' + e);
+            console.error('Error launching stars payment:', e);
+            var result = {
+                status: "error",
+                productId: productIdStr,
+                errorMessage: e.message
+            };
+            unityInstance.SendMessage('TelegramWebApp', callbackName, JSON.stringify(result));
         }
       }
 
