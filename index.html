@@ -77,8 +77,7 @@
 
       function StarsPayment(amount, callbackName) {
         // Вызываем Telegram WebApp API
-        window.alert('Process');
-
+        
         try {
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.openInvoice({
@@ -98,7 +97,7 @@
                 window.alert('Telegram WebApp API not found');
             }
         } catch (e) {
-            window.alert('Error launching stars payment:', e);
+            window.alert('Error launching stars payment: ' + e);
         }
       }
 
