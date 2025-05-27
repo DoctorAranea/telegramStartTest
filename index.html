@@ -27,6 +27,56 @@
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+
+
+
+
+
+      async function StarsPayment(amount, callbackName) {
+        const invoice = {
+            chat_id: id, // ID пользователя
+            title: "Кидание денег", // Название товара
+            description: "Кинуть деньги", // Описание
+            payload: "unique_payload_123", // Уникальный идентификатор
+            currency: "XTR", // Валюта (Telegram Stars используют USD)
+            prices: [{ label: "Цена", amount: 1 }], // Цена в минимальных единицах валюты (1000 = $10.00)
+            is_flexible: false // Опционально: гибкая цена
+        };
+        
+        const response = await fetch(`https://api.telegram.org/bot${'7754126241:AAFCGJ3wr4_oKBwJ-QdnVoR9_kxPJc0XvJQ'}/createInvoiceLink`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invoice)
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+            const invoiceLink = data.result; // Получаем ссылку на инвойс
+            tg.openInvoice(invoiceLink); // Открываем окно оплаты внутри Mini App
+        } else {
+            window.alert("Ошибка при создании инвойса:", data.description);
+        }
+      }
+
+
+
+      tg.onEvent("invoiceClosed", (event) => {
+            if (event.status === "paid") {
+                window.alert("Оплата прошла успешно!");
+                unityInstance.SendMessage('TelegramWebAppButton', callbackName, JSON.stringify(result));
+            } else {
+                window.alert("Оплата не была завершена.");
+                unityInstance.SendMessage('TelegramWebAppButton', callbackName, JSON.stringify(result));
+            }
+      });
+
+
+  
+
+
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -74,56 +124,6 @@
       }
 
       document.querySelector("#unity-loading-bar").style.display = "block";
-
-      function StarsPayment(amount, callbackName) {
-        // Вызываем Telegram WebApp API
-        const productIdStr = 'testProductId';
-        try {
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Правильный формат запроса для звёзд
-                Telegram.WebApp.sendData(JSON.stringify({
-                    type: "stars_payment",
-                    product_id: productIdStr
-                }));
-                
-                // Обработчик ответа
-                Telegram.WebApp.onEvent('invoiceClosed', function(eventData) {
-                    var result = {
-                        status: eventData.status,
-                        productId: productIdStr,
-                        errorMessage: eventData.error_message || ''
-                    };
-                    
-                    var resultJson = JSON.stringify(result);
-                    
-                    if (typeof unityInstance !== 'undefined') {
-                        window.alert('1: ' + resultJson);
-                        unityInstance.SendMessage('TelegramWebAppButton', callbackName, resultJson);
-                    }
-                });
-            } else {
-                console.error('Telegram WebApp API not found');
-                var result = {
-                    status: "error",
-                    productId: productIdStr,
-                    errorMessage: "Telegram WebApp API not available"
-                };
-                
-                window.alert('2: ' + JSON.stringify(result));
-                unityInstance.SendMessage('TelegramWebAppButton', callbackName, JSON.stringify(result));
-            }
-        } catch (e) {
-            console.error('Error launching stars payment:', e);
-            var result = {
-                status: "error",
-                productId: productIdStr,
-                errorMessage: e.message
-            };
-
-            window.alert('3: ' + JSON.stringify(result));
-            unityInstance.SendMessage('TelegramWebAppButton', callbackName, JSON.stringify(result));
-        }
-      }
 
       var script = document.createElement("script");
       script.src = loaderUrl;
